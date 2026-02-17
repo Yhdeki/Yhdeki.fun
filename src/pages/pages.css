@@ -1,0 +1,31 @@
+#blackjack-div {
+    border: 8px solid hsl(267, 69%, 44%);
+    border-radius: 10px;
+    padding: 15px; /* replaced padding-bottom: 250px */
+
+    background-color: blueviolet;
+}
+
+#blackjack-game-div {
+	display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+
+    min-height: 400px;
+    min-width: fit-content;
+    text-align: center;
+}
+h1,
+h2,
+h3 {
+    text-align: center;
+}
+
+.result {
+    color: rgb(26, 204, 26);
+    text-align: center;
+    font-size: 2em;
+    margin-top: auto; /* pushes it to the bottom */
+    width: 100%;
+}
