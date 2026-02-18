@@ -22,10 +22,23 @@ h3 {
     text-align: center;
 }
 
-.result {
+.result-lbl {
     color: rgb(26, 204, 26);
     text-align: center;
     font-size: 2em;
     margin-top: auto; /* pushes it to the bottom */
     width: 100%;
+}
+
+.info-lbl {
+    color: black;
+}
+
+.error-lbl {
+    color: rgb(174, 4, 4);
+}
+
+label {
+    font: italic;
+    font-size: 1.5em;
 }

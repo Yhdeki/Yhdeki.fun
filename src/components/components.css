@@ -69,19 +69,6 @@ button:hover {
     /* removed position: absolute */
 }
 
-.info-lbl {
-    color: black;
-}
-
-.error-lbl {
-    color: rgb(174, 4, 4);
-}
-
-label {
-    font: italic;
-    font-size: 1.5em;
-}
-
 input {
     background-color: inherit;
     border: none;

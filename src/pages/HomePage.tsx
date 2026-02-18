@@ -1,5 +1,5 @@
 import ListGroup from "../components/ListGroup";
-import "../index.css";
+import "./pages.css";
 
 function HomePage() {
   return (
