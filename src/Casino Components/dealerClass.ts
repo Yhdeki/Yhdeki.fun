@@ -1,7 +1,8 @@
 import InCasino from "./inCasinoClass";
 
 class Dealer extends InCasino {
-    deal(target: InCasino) {
+
+    deal(target: InCasino, handIndex: number) {
         if (this.casino.deck.length === 0) {
             console.warn("Deck is empty!");
             return;
@@ -12,8 +13,8 @@ class Dealer extends InCasino {
         const card = this.casino.deck[0];
         this.casino.deck.splice(0, 1); // remove the top card  ← fixed: was splice(indexOf) which had a bug
 
-        target.cards.push(card);
-        target.addToSum(card);
+        target.hands[handIndex].cards.push(card);
+        target.hands[handIndex].addToSum(card);
     }
 }
 

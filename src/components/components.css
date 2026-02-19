@@ -61,12 +61,23 @@ button:hover {
     margin-bottom: 10px;
 }
 
-.card-container {
+.hand-container {
     min-height: fit-content;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     /* removed position: absolute */
+}
+select {
+	text-align: center;
+    margin: 5px;
+    padding: 5px;
+	background-color: aqua;
+	color: hsl(56, 95%, 31%);
+	border-radius: 8px;
+	border: none;
+	width: 115px;
+	height: 40px;
 }
 
 input {

@@ -1,5 +1,5 @@
 interface Props {
-    myId: string;
+	myId: string;
 }
 
 function BetContainer(props: Props) {

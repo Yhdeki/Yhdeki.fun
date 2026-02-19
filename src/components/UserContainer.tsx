@@ -1,45 +1,50 @@
-import Card from "../Casino Components/cardClass";
-import CardNode from "./Card";
+import type Hand from "../Casino Components/handClass";
+import HandContainer from "./HandContainer";
+import InCasino from "../Casino Components/inCasinoClass";
+import { Fragment } from "react/jsx-dev-runtime";
 interface Props {
     id: string;
     title: string;
-    cards: Card[];
+    hands: Hand[];
     availableOptions: string[];
     gameEnd: boolean;
-    numOfCardContainers: number;
-	setSelectedOption: (option: string) => void;
+    setSelectedOption: (option: string) => void;
+    whoHasHand: InCasino;
 }
 
 function UserContainer(props: Props) {
+    const handleClick = () => {
+        const option = document.getElementById(
+            `${props.id}-actions`,
+        ) as HTMLSelectElement;
+        props.setSelectedOption(option.value);
+    };
     return (
         <>
-            <div id={props.id} className="user-container">
-                <label id={props.id} className="info-lbl">
+            <div id={`${props.id}-div`} className="user-container">
+                <label id={`${props.id}-lbl`} className="info-lbl">
                     {props.title}
                 </label>
-                {Array.from({ length: props.numOfCardContainers }).map(
-                    (_, index) => (
-                        <div key={index} className="card-container">
-                            {props.cards.map((card) => (
-                                <CardNode
-                                    key={card.suit + card.rank}
-                                    suit={card.suit}
-                                    rank={card.rank}
-                                />
-                            ))}
-                        </div>
-                    ),
-                )}
+                {props.hands.map((hand, index) => (
+                    <Fragment key={index}>
+                        <HandContainer
+                            myId={props.id}
+                            whoHasHand={props.whoHasHand}
+                            handIndex={index}
+                            gameEnd={props.gameEnd}
+                            setSelectedOption={props.setSelectedOption}
+                            availableOptions={props.availableOptions}
+                        />
+                        {props.id === "player" && <button
+                            id={`${props.id}-button`}
+                            className="alone-button"
+                            onClick={handleClick}
+                        >
+                            Submit
+                        </button>}
+                    </Fragment>
+                ))}
             </div>
-            {!props.gameEnd && props.id == "player" && (
-                <select id={`${props.id}-actions`} className="game-select" onChange={(value) => props.setSelectedOption(value.target.value)}>
-                    {props.availableOptions.map((option) => (
-                        <option key={option} value={option}>
-                            {option}
-                        </option>
-                    ))}
-                </select>
-            )}
         </>
     );
 }

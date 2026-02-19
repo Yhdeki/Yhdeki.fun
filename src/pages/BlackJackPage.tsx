@@ -2,13 +2,13 @@ import { Link } from "react-router-dom";
 import UserContainer from "../components/UserContainer";
 import "./pages.css";
 import BetContainer from "../components/BetContainer";
-import BlackjackGame from "../Games/BlackjackGame";
+import { startGame } from "../Games/BlackjackGame";
 import { useCasino } from "../Contexts/CasinoContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { handleAction } from "../Games/BlackjackGame";
 
 function BlackJackPage() {
-	const [numOfCardContainers, setNumOfCardContainers] = useState<number>(1);
-	const [gameEnd, setGameEnd] = useState<boolean>(true);
+    const [gameEnd, setGameEnd] = useState<boolean>(true);
     const [availableOptions, setAvailableOptions] = useState<string[]>([
         "Hit",
         "Stand",
@@ -22,27 +22,21 @@ function BlackJackPage() {
         casino,
         player,
         dealer,
-        playerCards, // ← React state, UI reads this
-        dealerCards, // ← React state, UI reads this
-        setPlayerCards,
-        setDealerCards,
+		playerChips,
         setPlayerChips,
-        setPlayerSum,
-        setDealerSum,
+        setPlayerHands,
+        setDealerHands,
         resetRound,
     } = useCasino();
 
     const newGame = () => {
-        BlackjackGame(casino, player, dealer, selectedOption, {
-            setPlayerCards,
-            setDealerCards,
+        startGame(casino, player, dealer, {
             setPlayerChips,
-            setPlayerSum,
-            setDealerSum,
             setAvailableOptions,
             setSelectedOption,
-			setGameEnd,
-			setNumOfCardContainers,
+            setGameEnd,
+            setPlayerHands,
+            setDealerHands,
         });
     };
 
@@ -50,6 +44,15 @@ function BlackJackPage() {
         resetRound();
         newGame();
     };
+
+    // Add this:
+    useEffect(() => {
+        if (selectedOption && selectedOption !== " " && !gameEnd) {
+            handleAction(selectedOption);
+            setSelectedOption(" "); // reset after action
+        }
+    }, [selectedOption]);
+
     return (
         <div id="blackjack-div">
             <div id="blackjack-game-div">
@@ -57,33 +60,35 @@ function BlackJackPage() {
                 <label
                     id="blackjack-info"
                     className="info-lbl"
-                >{`chips: ${player.amountOfChips}`}</label>
+                >{`chips: ${playerChips}`}</label>
                 <UserContainer
                     id="dealer"
                     title="Dealer's hand"
-                    cards={dealerCards}
+                    hands={dealer.hands}
                     availableOptions={availableOptions}
-					gameEnd={gameEnd}
-					numOfCardContainers={numOfCardContainers}
-					setSelectedOption={() => {}}
+                    gameEnd={gameEnd}
+                    setSelectedOption={() => {}}
+                    whoHasHand={dealer}
                 />
                 <UserContainer
                     id="player"
                     title="Your hand"
-                    cards={playerCards}
+                    hands={player.hands}
                     availableOptions={availableOptions}
-					gameEnd={gameEnd}
-					numOfCardContainers={numOfCardContainers}
-					setSelectedOption={setSelectedOption}
+                    gameEnd={gameEnd}
+                    setSelectedOption={setSelectedOption}
+                    whoHasHand={player}
                 />
                 <label id="blackjack-error" className="error-lbl"></label>
                 <label id="blackjack-result" className="result-lbl"></label>
             </div>
             <BetContainer myId="blackjack-bet" />
             <br />
-            {gameEnd && (<button className="alone-button" onClick={newRound}>
-                New Round
-            </button>)}
+            {gameEnd && (
+                <button className="alone-button" onClick={newRound}>
+                    New Round
+                </button>
+            )}
             <hr />
             <Link to="/">
                 <button className="alone-button">Home</button>
