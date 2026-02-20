@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import BlackjackPage from "./pages/BlackJackPage";
 import { CasinoProvider } from "./Contexts/CasinoContext";
+import ChinesePoker from "./pages/ChinesePokerPage";
 
 function App() {
     return (
@@ -10,7 +11,7 @@ function App() {
 				<Routes>
 					<Route path="/" element={<HomePage />} />
 					<Route path="/blackjack" element={<BlackjackPage />} />
-					{/* Add more routes as you build more games */}
+					<Route path="/chinese poker" element={<ChinesePoker />}></Route>
 				</Routes>
 			</BrowserRouter>
 		</CasinoProvider>

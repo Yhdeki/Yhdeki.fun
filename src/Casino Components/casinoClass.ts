@@ -31,12 +31,6 @@ class Casino {
             [this.deck[i], this.deck[j]] = [this.deck[j], this.deck[i]];
         }
     }
-
-    // Rebuilds and reshuffles a fresh deck (called between rounds)
-    resetDeck() {
-        this.buildDeck();
-        this.shuffle();
-    }
 }
 
 export default Casino;

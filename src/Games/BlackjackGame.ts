@@ -1,19 +1,23 @@
 import type Casino from "../Casino Components/casinoClass";
 import type Dealer from "../Casino Components/dealerClass";
-import type Player from "../Casino Components/playerClass";
+import Player from "../Casino Components/playerClass";
 import Card from "../Casino Components/cardClass";
 import Hand from "../Casino Components/handClass";
+import BlackjackHand from "../Casino Components/Blackjack Components/BlackjackHand";
 
 // ─────────────────────────────────────────────
 // We pass in the setter functions from React context
 // so the game can update the UI after mutating the classes
 // ─────────────────────────────────────────────
 export interface GameSetters {
-    setPlayerHands: (hands: Hand[]) => void;
-    setDealerHands: (hands: Hand[]) => void;
+    setPlayerHandSum: (hands: Hand[]) => void;
+    setDealerHandSum: (hands: Hand[]) => void;
+    setPlayerHandsCards: (hands: Hand[]) => void;
+    setDealerHandsCards: (hands: Hand[]) => void;
     setPlayerChips: (chips: number) => void;
     setAvailableOptions: (options: string[]) => void;
     setSelectedOption: (option: string) => void;
+    setLostEverything: (lostEverything: boolean) => void;
     setGameEnd: (gameEnd: boolean) => void;
 }
 
@@ -23,6 +27,7 @@ let resultLbl: HTMLOutputElement;
 
 let myCasino: Casino, myPlayer: Player, myDealer: Dealer;
 let mySetters: GameSetters;
+let dealerHiddenCard: Card;
 
 export function startGame(
     casino: Casino,
@@ -30,9 +35,6 @@ export function startGame(
     dealer: Dealer,
     setters: GameSetters,
 ) {
-    setters.setGameEnd(false);
-    setters.setSelectedOption(" ");
-
     myCasino = casino;
     myPlayer = player;
     myDealer = dealer;
@@ -47,11 +49,14 @@ export function startGame(
     if (errorLbl) errorLbl.textContent = "";
 
     // Initialize Hands
-    player.hands = [new Hand()];
-    dealer.hands = [new Hand()];
+    player.hands = [new BlackjackHand()];
+    dealer.hands = [new BlackjackHand()];
 
     // Validate Bet (on first hand)
     if (!isInputValid(0)) return;
+
+    setters.setGameEnd(false);
+    setters.setSelectedOption("none");
 
     // Shuffle
     casino.shuffle();
@@ -60,15 +65,27 @@ export function startGame(
     dealer.deal(player, 0);
     dealer.deal(player, 0);
     dealer.deal(dealer, 0);
-    dealer.hands[0].cards.push(new Card("Clubs", "0")); // Hidden card
+    dealer.hands[0].cards.push(new Card("Clubs", "0")); // Face-down card (not added to sum)
+
+    dealerHiddenCard = casino.deck[0];
+    dealer.hands[0].addToSum(dealerHiddenCard);
+    casino.deck.splice(0, 1);
 
     updateUI();
 
-    // Check Immediate blackjack
+    // Check immediate blackjack for dealer and player
+    if (dealer.hands[0].sum === BLACKJACK) {
+        dealer.hands[0].cards.pop();
+        dealer.hands[0].cards.push(dealerHiddenCard);
+        finishGame();
+        return;
+    }
+
     if (player.hands[0].sum === BLACKJACK) {
         // Dealer check? standard rules usually check dealer blackjack too.
         // For now, simpler "Player wins" logic
         if (resultLbl) resultLbl.textContent = "Blackjack! You won!";
+        player.hands[0].updateStatus("Blackjack");
         player.amountOfChips += player.hands[0].betAmount * 2.5; // 3:2 usually?
         mySetters.setPlayerChips(player.amountOfChips);
         setters.setGameEnd(true);
@@ -76,13 +93,17 @@ export function startGame(
     }
 
     updateOptions(0);
-    pickOption();
+    while (myPlayer.hands.some((h) => h.status === "Playing")) {
+        const currentHandIndex: number = myPlayer.hands.findIndex(
+            (h) => h.status === "Playing",
+        );
+        updateOptions(currentHandIndex);
+        break;
+    }
 }
-function pickOption() {}
 
 export function handleAction(selectedOption: string) {
-    // Find active hand
-    // For simplicity, we assume we play hands in order.
+    updateUI();
     // Find the first hand that is "Playing".
     const activeHandIndex = myPlayer.hands.findIndex(
         (h) => h.status === "Playing",
@@ -109,6 +130,7 @@ export function handleAction(selectedOption: string) {
         default:
             break;
     }
+    updateUI();
 }
 
 function isInputValid(handIndex: number) {
@@ -124,43 +146,68 @@ function isInputValid(handIndex: number) {
 }
 
 function updateUI() {
-    mySetters.setPlayerHands(
-        myPlayer.hands.map((h) => Object.assign(new Hand(), h)),
+    mySetters.setPlayerHandsCards(
+        myPlayer.hands.map((h) => {
+            const clone: BlackjackHand = new BlackjackHand();
+            clone.cards = h.cards.map((c) => new Card(c.suit, c.rank));
+            clone.sum = h.sum;
+            clone.aces = h.aces;
+            clone.betAmount = h.betAmount;
+            clone.status = h.status;
+            return clone;
+        }),
     );
-    mySetters.setDealerHands([...myDealer.hands]);
+    mySetters.setDealerHandsCards(
+        myDealer.hands.map((h) => {
+            const clone: BlackjackHand = new BlackjackHand();
+            clone.cards = h.cards.map((c) => new Card(c.suit, c.rank));
+            clone.sum = h.sum;
+            clone.aces = h.aces;
+            clone.betAmount = h.betAmount;
+            clone.status = h.status;
+            return clone;
+        }),
+    );
     mySetters.setPlayerChips(myPlayer.amountOfChips);
 }
 
 function updateOptions(handIndex: number) {
-    const hand = myPlayer.hands[handIndex];
-    const options = ["Hit", "Stand"];
+    updateUI();
+    const hand: Hand = myPlayer.hands[handIndex];
+    let options: string[] = ["Hit", "Stand"];
 
     // Check split availability
     if (hand.cards.length === 2 && myPlayer.amountOfChips >= hand.betAmount) {
         options.push("DoubleDown");
-        if (hand.cards[0].rank === hand.cards[1].rank) {
+        if (
+            hand.cards[0].rank === hand.cards[1].rank ||
+            (hand.cards[0].isWorthTen() && hand.cards[1].isWorthTen()) // A jack and a King can split
+        ) {
             options.push("Split");
         }
+    }
+    if (hand.sum === BLACKJACK) {
+        options = [];
     }
 
     mySetters.setAvailableOptions(options);
 }
 
 function hit(handIndex: number) {
-    console.log("Hit on hand", handIndex);
     myDealer.deal(myPlayer, handIndex);
     updateUI();
 
     if (myPlayer.hands[handIndex].sum > BLACKJACK) {
-        myPlayer.hands[handIndex].status = "Bust";
+        myPlayer.hands[handIndex].updateStatus("Bust");
         if (errorLbl) errorLbl.textContent = "Bust!";
         checkNextHandOrDealer();
+    } else if (myPlayer.hands[handIndex].sum === BLACKJACK) {
+        myPlayer.hands[handIndex].updateStatus("Blackjack");
     }
 }
 
 function stand(handIndex: number) {
-    console.log("Stand on hand", handIndex);
-    myPlayer.hands[handIndex].status = "Stand";
+    myPlayer.hands[handIndex].updateStatus("Stand");
     checkNextHandOrDealer();
 }
 
@@ -178,23 +225,26 @@ function doubleDown(handIndex: number): void {
     updateUI();
 
     if (myPlayer.hands[handIndex].sum > BLACKJACK) {
-        myPlayer.hands[handIndex].status = "Bust";
+        myPlayer.hands[handIndex].updateStatus("Bust");
+    } else if (myPlayer.hands[handIndex].sum === BLACKJACK) {
+        myPlayer.hands[handIndex].updateStatus("Blackjack");
     } else {
-        myPlayer.hands[handIndex].status = "Stand"; // Force stand after DD
+        myPlayer.hands[handIndex].updateStatus("Stand"); // Force stand after DD
     }
     checkNextHandOrDealer();
 }
 
 function split(handIndex: number): void {
-    const originalHand = myPlayer.hands[handIndex];
+    const originalHand: BlackjackHand = myPlayer.hands[handIndex];
 
     // Create new hand
-    const newHand = new Hand();
+    const newHand: BlackjackHand = new BlackjackHand();
     newHand.betAmount = originalHand.betAmount; // Match bet
     myPlayer.amountOfChips -= newHand.betAmount; // Deduct chips
 
     // Move second card to new hand
     const splitCard = originalHand.cards.pop();
+
     if (splitCard) {
         // Need to re-calculate sums since we popped a card
         // Reset sums and re-add remaining card
@@ -218,11 +268,18 @@ function split(handIndex: number): void {
     myDealer.deal(myPlayer, handIndex + 1);
 
     updateUI();
-    updateOptions(handIndex); // Options for the current hand again
+
+    // You can't play when splitting aces
+    if (splitCard && splitCard.rank === "A") {
+        checkNextHandOrDealer();
+    } else {
+        updateOptions(handIndex); // Options for the current hand again
+    }
 }
 
 function checkNextHandOrDealer() {
-    const nextHandIndex = myPlayer.hands.findIndex(
+    updateUI();
+    const nextHandIndex: number = myPlayer.hands.findIndex(
         (h) => h.status === "Playing",
     );
     if (nextHandIndex !== -1) {
@@ -235,10 +292,10 @@ function checkNextHandOrDealer() {
 }
 
 function dealerTurn() {
+    updateUI();
     // Only play if at least one player hand is not busted?
-    // Standard rule: if all player hands bust, dealer doesn't play.
-    const activeHands = myPlayer.hands.filter(
-        (h) => h.status !== "Bust" && h.status !== "Surrender",
+    const activeHands: Hand[] = myPlayer.hands.filter(
+        (h) => h.status !== "Bust",
     );
 
     if (activeHands.length === 0) {
@@ -246,23 +303,13 @@ function dealerTurn() {
         return;
     }
 
-    // Reveal dealer card (remove the dummy "0" card or just flip it logic)
-    // Our logic added a "0" card. Remove it and deal real one?
-    // Existing logic: dealer.cards.push(new Card("Clubs", "0"));
-    // Real logic: Dealer had 1 card dealt + 1 dummy.
-    // We should probably remove the dummy and deal until >= 17.
-
-    myDealer.hands[0].cards.pop(); // Remove dummy
-    // Dealer needs to have 2 cards min to start?
-    // "dealer.deal(dealer)" was called once.
-    // deal(dealer) gives 1 card.
-    // We need to deal the second card now?
-    myDealer.deal(myDealer, 0);
+    myDealer.hands[0].cards.pop(); // Remove face down card
+    myDealer.hands[0].cards.push(dealerHiddenCard); // Swap in the pre-drawn hidden card (sum already includes it)
 
     updateUI();
 
     // Dealer hits on soft 17? Let's assume Stand on 17.
-    const dealerHand = myDealer.hands[0];
+    const dealerHand: BlackjackHand = myDealer.hands[0];
 
     const playDealer = () => {
         if (dealerHand.sum < 17) {
@@ -280,31 +327,36 @@ function dealerTurn() {
 }
 
 function finishGame() {
-    mySetters.setGameEnd(true);
-    const dealerSum = myDealer.hands[0].sum;
-    const dealerBust = dealerSum > 21;
+    updateUI();
+    const dealerSum: number = myDealer.hands[0].sum;
+    const dealerBust: boolean = dealerSum > BLACKJACK;
 
-    let resultText = "";
+    let resultText: string = "";
 
     myPlayer.hands.forEach((hand, index) => {
         if (hand.status === "Bust") {
-            resultText += `Hand ${index + 1}: Bust`;
+            resultText += `Hand ${index + 1}: Bust `;
         } else {
             if (dealerBust) {
-                resultText += `Hand ${index + 1}: Win!`;
+                resultText += `Hand ${index + 1}: Win! `;
                 myPlayer.amountOfChips += hand.betAmount * 2;
             } else if (hand.sum > dealerSum) {
-                resultText += `Hand ${index + 1}: Win!`;
+                resultText += `Hand ${index + 1}: Win! `;
                 myPlayer.amountOfChips += hand.betAmount * 2;
             } else if (hand.sum === dealerSum) {
-                resultText += `Hand ${index + 1}: Push`;
+                resultText += `Hand ${index + 1}: Push `;
                 myPlayer.amountOfChips += hand.betAmount;
             } else {
-                resultText += `Hand ${index + 1}: Lose`;
+                resultText += `Hand ${index + 1}: Lose `;
             }
         }
     });
 
     if (resultLbl) resultLbl.textContent = resultText;
     updateUI(); // Final chip update
+    mySetters.setGameEnd(true);
+    setTimeout(() => {}, 1000);
+    if (myPlayer.amountOfChips === 0) {
+        mySetters.setLostEverything(true);
+    }
 }

@@ -22,10 +22,16 @@ function BlackJackPage() {
         casino,
         player,
         dealer,
-		playerChips,
+        playerChips,
+        playerHands,
+        dealerHands,
+        lostEverything,
         setPlayerChips,
-        setPlayerHands,
-        setDealerHands,
+        setPlayerHandSum,
+        setDealerHandSum,
+        setPlayerHandsCards,
+        setDealerHandsCards,
+        setLostEverything,
         resetRound,
     } = useCasino();
 
@@ -35,8 +41,11 @@ function BlackJackPage() {
             setAvailableOptions,
             setSelectedOption,
             setGameEnd,
-            setPlayerHands,
-            setDealerHands,
+            setPlayerHandSum,
+            setDealerHandSum,
+            setPlayerHandsCards,
+            setDealerHandsCards,
+            setLostEverything,
         });
     };
 
@@ -55,41 +64,49 @@ function BlackJackPage() {
 
     return (
         <div id="blackjack-div">
-            <div id="blackjack-game-div">
-                <h1>Blackjack Game!</h1>
-                <label
-                    id="blackjack-info"
-                    className="info-lbl"
-                >{`chips: ${playerChips}`}</label>
-                <UserContainer
-                    id="dealer"
-                    title="Dealer's hand"
-                    hands={dealer.hands}
-                    availableOptions={availableOptions}
-                    gameEnd={gameEnd}
-                    setSelectedOption={() => {}}
-                    whoHasHand={dealer}
-                />
-                <UserContainer
-                    id="player"
-                    title="Your hand"
-                    hands={player.hands}
-                    availableOptions={availableOptions}
-                    gameEnd={gameEnd}
-                    setSelectedOption={setSelectedOption}
-                    whoHasHand={player}
-                />
-                <label id="blackjack-error" className="error-lbl"></label>
-                <label id="blackjack-result" className="result-lbl"></label>
-            </div>
-            <BetContainer myId="blackjack-bet" />
-            <br />
-            {gameEnd && (
-                <button className="alone-button" onClick={newRound}>
-                    New Round
-                </button>
+            {!lostEverything && (
+                <>
+                    <div id="blackjack-game-div">
+                        <h1>Blackjack Game!</h1>
+                        <label
+                            id="blackjack-info"
+                            className="info-lbl"
+                        >{`chips: ${playerChips}`}</label>
+                        <UserContainer
+                            id="dealer"
+                            title="Dealer's hand"
+                            hands={dealerHands}
+                            availableOptions={availableOptions}
+                            gameEnd={gameEnd}
+                            setSelectedOption={() => {}}
+                        />
+                        <UserContainer
+                            id="player"
+                            title="Your hand"
+                            hands={playerHands}
+                            availableOptions={availableOptions}
+                            gameEnd={gameEnd}
+                            setSelectedOption={setSelectedOption}
+                        />
+                        <label
+                            id="blackjack-error"
+                            className="error-lbl"
+                        ></label>
+                        <label
+                            id="blackjack-result"
+                            className="result-lbl"
+                        ></label>
+                    </div>
+                    <BetContainer myId="blackjack-bet" />
+                    <br />
+                    {gameEnd && (
+                        <button className="alone-button" onClick={newRound}>
+                            New Round
+                        </button>
+                    )}
+                    <hr />
+                </>
             )}
-            <hr />
             <Link to="/">
                 <button className="alone-button">Home</button>
             </Link>

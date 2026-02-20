@@ -3,6 +3,8 @@
     border-radius: 10px;
     padding: 15px; /* replaced padding-bottom: 250px */
 
+	/* Make the height the whole screen */
+	height: 200vh;
     background-color: blueviolet;
 }
 
@@ -22,6 +24,11 @@ h3 {
     text-align: center;
 }
 
+label {
+    font: italic;
+    font-size: 1.5em;
+}
+
 .result-lbl {
     color: rgb(26, 204, 26);
     text-align: center;
@@ -36,9 +43,4 @@ h3 {
 
 .error-lbl {
     color: rgb(174, 4, 4);
-}
-
-label {
-    font: italic;
-    font-size: 1.5em;
 }

@@ -14,12 +14,18 @@ interface CasinoContextType {
     player: Player;
     dealer: Dealer;
 
-	playerChips: number;
-	
+    playerChips: number;
+    playerHands: Hand[];
+    dealerHands: Hand[];
+    lostEverything: boolean;
+
     // Setter functions – these are what the game logic calls
     setPlayerChips: (chips: number) => void;
-    setPlayerHands: (hands: Hand[]) => void;
-    setDealerHands: (hands: Hand[]) => void;
+    setPlayerHandSum: (hands: Hand[]) => void;
+    setDealerHandSum: (hands: Hand[]) => void;
+    setPlayerHandsCards: (hands: Hand[]) => void;
+    setDealerHandsCards: (hands: Hand[]) => void;
+    setLostEverything: (lostEverything: boolean) => void;
 
     // Convenience reset for starting a new round
     resetRound: () => void;
@@ -43,16 +49,17 @@ export function CasinoProvider({ children }: { children: ReactNode }) {
     // React state for values that need to trigger re-renders
     // These mirror the class properties, but React watches these
     const [playerChips, setPlayerChips] = useState<number>(100);
-	const [playerHands, setPlayerHands] = useState<Hand[]>([]);
-	const [dealerHands, setDealerHands] = useState<Hand[]>([]);
-
+    const [playerHands, setPlayerHandsCards] = useState<Hand[]>([]);
+    const [dealerHands, setDealerHandsCards] = useState<Hand[]>([]);
+	const [lostEverything, setLostEverything] = useState<boolean>(false);
     // useCallback makes sure this function isn't recreated every render
     const resetRound = useCallback(() => {
         // Reset the class instances
-        setPlayerHands([]);
-        setDealerHands([]);
-        casino.resetDeck(); // we'll add this method to Casino
-    }, [casino, player, dealer]);
+        setPlayerHandsCards([]);
+        setDealerHandsCards([]);
+		
+        casino.shuffle();
+    }, [casino]);
 
     return (
         <CasinoContext.Provider
@@ -60,10 +67,16 @@ export function CasinoProvider({ children }: { children: ReactNode }) {
                 casino,
                 player,
                 dealer,
-				playerChips,
-				setPlayerChips,
-				setPlayerHands,
-				setDealerHands,
+                playerChips,
+                playerHands,
+                dealerHands,
+                lostEverything,
+                setPlayerChips,
+                setPlayerHandSum: () => {},
+                setDealerHandSum: () => {},
+                setPlayerHandsCards,
+                setDealerHandsCards,
+                setLostEverything,
                 resetRound,
             }}
         >
