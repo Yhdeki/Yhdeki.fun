@@ -1,27 +1,29 @@
-import { Link } from "react-router-dom";
 import UserContainer from "../components/UserContainer";
-import "./pages.css";
+import "../pages/pages.css";
 import BetContainer from "../components/BetContainer";
+import ChipsDisplay from "../components/ChipsDisplay";
+import NewRoundButton from "../components/NewRoundButton";
+import HomeLink from "../components/HomeLink";
 import { startGame } from "../Games/BlackjackGame";
 import { useCasino } from "../Contexts/CasinoContext";
-import { useState, useEffect } from "react";
+import { useGameState } from "../hooks/useGameState";
+import { useEffect } from "react";
 import { handleAction } from "../Games/BlackjackGame";
+import BlackjackPlayer from "../Casino Components/Blackjack Components/BlackjackPLayer";
+import BlackjackDealer from "../Casino Components/Blackjack Components/BlackjackDealer";
 
 function BlackJackPage() {
-    const [gameEnd, setGameEnd] = useState<boolean>(true);
-    const [availableOptions, setAvailableOptions] = useState<string[]>([
-        "Hit",
-        "Stand",
-        "DoubleDown",
-        "Split",
-    ]);
-    const [selectedOption, setSelectedOption] = useState<string>("");
-    // Pull BOTH the class instances (for game logic)
-    // AND the React state values (for displaying in the UI)
+    const {
+        gameEnd,
+        setGameEnd,
+        availableOptions,
+        setAvailableOptions,
+        selectedOption,
+        setSelectedOption,
+    } = useGameState(["Hit", "Stand", "DoubleDown", "Split"]);
+
     const {
         casino,
-        player,
-        dealer,
         playerChips,
         playerHands,
         dealerHands,
@@ -36,17 +38,22 @@ function BlackJackPage() {
     } = useCasino();
 
     const newGame = () => {
-        startGame(casino, player, dealer, {
-            setPlayerChips,
-            setAvailableOptions,
-            setSelectedOption,
-            setGameEnd,
-            setPlayerHandSum,
-            setDealerHandSum,
-            setPlayerHandsCards,
-            setDealerHandsCards,
-            setLostEverything,
-        });
+        startGame(
+            casino,
+            new BlackjackPlayer(casino, playerChips),
+            new BlackjackDealer(casino),
+            {
+                setPlayerChips,
+                setAvailableOptions,
+                setSelectedOption,
+                setGameEnd,
+                setPlayerHandSum,
+                setDealerHandSum,
+                setPlayerHandsCards,
+                setDealerHandsCards,
+                setLostEverything,
+            },
+        );
     };
 
     const newRound = () => {
@@ -68,10 +75,7 @@ function BlackJackPage() {
                 <>
                     <div id="blackjack-game-div">
                         <h1>Blackjack Game!</h1>
-                        <label
-                            id="blackjack-info"
-                            className="info-lbl"
-                        >{`chips: ${playerChips}`}</label>
+                        <ChipsDisplay chips={playerChips} id="blackjack-info" />
                         <UserContainer
                             id="dealer"
                             title="Dealer's hand"
@@ -99,17 +103,11 @@ function BlackJackPage() {
                     </div>
                     <BetContainer myId="blackjack-bet" />
                     <br />
-                    {gameEnd && (
-                        <button className="alone-button" onClick={newRound}>
-                            New Round
-                        </button>
-                    )}
+                    <NewRoundButton gameEnd={gameEnd} onNewRound={newRound} />
                     <hr />
                 </>
             )}
-            <Link to="/">
-                <button className="alone-button">Home</button>
-            </Link>
+            <HomeLink />
         </div>
     );
 }

@@ -1,38 +1,22 @@
 import type Casino from "../Casino Components/casinoClass";
-import type Dealer from "../Casino Components/dealerClass";
-import Player from "../Casino Components/playerClass";
 import Card from "../Casino Components/cardClass";
-import Hand from "../Casino Components/handClass";
 import BlackjackHand from "../Casino Components/Blackjack Components/BlackjackHand";
-
-// ─────────────────────────────────────────────
-// We pass in the setter functions from React context
-// so the game can update the UI after mutating the classes
-// ─────────────────────────────────────────────
-export interface GameSetters {
-    setPlayerHandSum: (hands: Hand[]) => void;
-    setDealerHandSum: (hands: Hand[]) => void;
-    setPlayerHandsCards: (hands: Hand[]) => void;
-    setDealerHandsCards: (hands: Hand[]) => void;
-    setPlayerChips: (chips: number) => void;
-    setAvailableOptions: (options: string[]) => void;
-    setSelectedOption: (option: string) => void;
-    setLostEverything: (lostEverything: boolean) => void;
-    setGameEnd: (gameEnd: boolean) => void;
-}
+import type BlackjackPlayer from "../Casino Components/Blackjack Components/BlackjackPLayer";
+import type BlackjackDealer from "../Casino Components/Blackjack Components/BlackjackDealer";
+import type { GameSetters } from "./GameSetters";
 
 const BLACKJACK: number = 21;
 let errorLbl: HTMLOutputElement;
 let resultLbl: HTMLOutputElement;
 
-let myCasino: Casino, myPlayer: Player, myDealer: Dealer;
+let myCasino: Casino, myPlayer: BlackjackPlayer, myDealer: BlackjackDealer;
 let mySetters: GameSetters;
 let dealerHiddenCard: Card;
 
 export function startGame(
     casino: Casino,
-    player: Player,
-    dealer: Dealer,
+    player: BlackjackPlayer,
+    dealer: BlackjackDealer,
     setters: GameSetters,
 ) {
     myCasino = casino;
@@ -173,7 +157,7 @@ function updateUI() {
 
 function updateOptions(handIndex: number) {
     updateUI();
-    const hand: Hand = myPlayer.hands[handIndex];
+    const hand: BlackjackHand = myPlayer.hands[handIndex];
     let options: string[] = ["Hit", "Stand"];
 
     // Check split availability
@@ -181,7 +165,10 @@ function updateOptions(handIndex: number) {
         options.push("DoubleDown");
         if (
             hand.cards[0].rank === hand.cards[1].rank ||
-            (hand.cards[0].isWorthTen() && hand.cards[1].isWorthTen()) // A jack and a King can split
+            (hand.cards[0].getValue() > 9 &&
+                hand.cards[0].getValue() < 14 &&
+                hand.cards[1].getValue() > 9 &&
+                hand.cards[1].getValue() < 14) // A jack and a King can split
         ) {
             options.push("Split");
         }
@@ -294,7 +281,7 @@ function checkNextHandOrDealer() {
 function dealerTurn() {
     updateUI();
     // Only play if at least one player hand is not busted?
-    const activeHands: Hand[] = myPlayer.hands.filter(
+    const activeHands: BlackjackHand[] = myPlayer.hands.filter(
         (h) => h.status !== "Bust",
     );
 

@@ -1,9 +1,19 @@
-import { useState } from "react";
 import { useCasino } from "../Contexts/CasinoContext";
+import { useGameState } from "../hooks/useGameState";
 import UserContainer from "../components/UserContainer";
+import ChipsDisplay from "../components/ChipsDisplay";
+import NewRoundButton from "../components/NewRoundButton";
+import { startGame } from "../Games/ChinesePoker";
 
 function ChinesePoker() {
-    const [gameEnd, setGameEnd] = useState<boolean>(true);
+    const {
+        gameEnd,
+        setGameEnd,
+        availableOptions,
+        setAvailableOptions,
+        selectedOption,
+        setSelectedOption,
+    } = useGameState(["1", "2", "3", "4", "5"]);
 
     const {
         casino,
@@ -21,6 +31,20 @@ function ChinesePoker() {
         setLostEverything,
         resetRound,
     } = useCasino();
+
+    const newGame = () => {
+        startGame(casino, player, dealer, {
+            setPlayerChips,
+            setAvailableOptions,
+            setSelectedOption,
+            setGameEnd,
+            setPlayerHandSum,
+            setDealerHandSum,
+            setPlayerHandsCards,
+            setDealerHandsCards,
+            setLostEverything,
+        });
+    };
     const newRound = () => {
         resetRound();
     };
@@ -31,16 +55,25 @@ function ChinesePoker() {
                 <>
                     <div id="chinese-poker-game-div"></div>
                     <h1>Chinese Poker Game!</h1>
-                    <label
-                        id="blackjack-info"
-                        className="info-lbl"
-                    >{`chips: ${playerChips}`}</label>
-					<UserContainer />
-                    {gameEnd && (
-                        <button className="alone-button" onClick={newRound}>
-                            New Round
-                        </button>
-                    )}
+                    <ChipsDisplay chips={playerChips} id="blackjack-info" />
+                    <UserContainer
+                        id="dealer"
+                        title="Opponent's side"
+                        hands={dealerHands}
+                        availableOptions={availableOptions}
+                        gameEnd={gameEnd}
+                        setSelectedOption={() => {}}
+                    />
+                    <UserContainer
+                        id="player"
+                        title="Your side"
+                        hands={playerHands}
+                        availableOptions={[]}
+                        gameEnd={gameEnd}
+                        setSelectedOption={setSelectedOption}
+                    />
+
+                    <NewRoundButton gameEnd={gameEnd} onNewRound={newRound} />
                 </>
             )}
         </div>
