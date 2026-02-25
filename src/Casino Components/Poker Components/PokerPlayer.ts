@@ -9,6 +9,9 @@ class PokerPlayer extends Player {
 		super(casino, chips);
 		this.hands = [];
 	}
+	validBetCheck(betButton: HTMLInputElement, handIndex: number): string {
+		return super.validBetCheck(betButton, handIndex);
+	}
 }
 
 export default PokerPlayer;

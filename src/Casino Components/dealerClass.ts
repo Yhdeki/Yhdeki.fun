@@ -1,8 +1,18 @@
 import type Card from "./cardClass";
-import InCasino from "./inCasinoClass";
+import type Casino from "./casinoClass";
+import type Hand from "./handClass";
+import type Player from "./playerClass";
 
-class Dealer extends InCasino {
-    deal(target: InCasino, handIndex: number) {
+class Dealer {
+    casino: Casino;
+    hands: Hand[];
+
+    constructor(casino: Casino) {
+        this.casino = casino;
+        this.hands = [];
+    }
+
+    deal(target: Dealer | Player, handIndex: number) {
         if (this.casino.deck.length === 0) {
             console.warn("Deck is empty!");
             return;
@@ -12,7 +22,6 @@ class Dealer extends InCasino {
         this.casino.deck.splice(0, 1); // remove it
 
         target.hands[handIndex].cards.push(card);
-        target.hands[handIndex].addToSum(card);
     }
 }
 

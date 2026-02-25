@@ -20,8 +20,8 @@
 
 .card {
     max-width: 60px;
+	display: flex;
     margin: 3px;
-    display: flex;
     border: 1px solid black;
 }
 
@@ -54,12 +54,30 @@ button:hover {
     padding: 5px;
 }
 
+.hands-display {
+    display: flex;
+    justify-content: center;
+    flex-wrap: nowrap; /* Forces all hands to stay in one row */
+    gap: 10px; /* Tighter gap for better fit */
+    width: 100%;
+    overflow-x: auto; /* Just in case they exceed even 320px, they can scroll sideways instead of hiding */
+}
+
+.hand-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px; /* Small enough for 5 to fit on 360px screen */
+    padding: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
 .bet-container {
     text-align: center;
-
-	border: 3px solid burlywood;
-	border-radius: 8px;
-
+    border: 3px solid burlywood;
+    border-radius: 8px;
     margin-top: 10px;
     margin-bottom: 10px;
 }
@@ -69,7 +87,6 @@ button:hover {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    /* removed position: absolute */
 }
 select {
 	text-align: center;

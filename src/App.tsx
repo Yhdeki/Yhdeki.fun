@@ -11,7 +11,7 @@ function App() {
 				<Routes>
 					<Route path="/" element={<HomePage />} />
 					<Route path="/blackjack" element={<BlackjackPage />} />
-					<Route path="/chinese poker" element={<ChinesePoker />}></Route>
+					<Route path="/chinese-poker" element={<ChinesePoker />}></Route>
 				</Routes>
 			</BrowserRouter>
 		</CasinoProvider>

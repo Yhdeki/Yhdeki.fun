@@ -13,6 +13,7 @@ import BlackjackPlayer from "../Casino Components/Blackjack Components/Blackjack
 import BlackjackDealer from "../Casino Components/Blackjack Components/BlackjackDealer";
 
 function BlackJackPage() {
+	
     const {
         gameEnd,
         setGameEnd,
@@ -70,13 +71,15 @@ function BlackJackPage() {
     }, [selectedOption]);
 
     return (
-        <div id="blackjack-div">
+        <div id="blackjack-div" className="page-div">
             {!lostEverything && (
                 <>
                     <div id="blackjack-game-div">
                         <h1>Blackjack Game!</h1>
                         <ChipsDisplay chips={playerChips} id="blackjack-info" />
                         <UserContainer
+                            condition1={!gameEnd}
+                            condition2={false}
                             id="dealer"
                             title="Dealer's hand"
                             hands={dealerHands}
@@ -85,6 +88,8 @@ function BlackJackPage() {
                             setSelectedOption={() => {}}
                         />
                         <UserContainer
+                            condition1={!gameEnd}
+                            condition2={true}
                             id="player"
                             title="Your hand"
                             hands={playerHands}
@@ -107,7 +112,7 @@ function BlackJackPage() {
                     <hr />
                 </>
             )}
-            <HomeLink />
+            {gameEnd &&<HomeLink />}
         </div>
     );
 }

@@ -118,7 +118,7 @@ export function handleAction(selectedOption: string) {
 }
 
 function isInputValid(handIndex: number) {
-    const betButton = document.getElementById(
+    const betButton: HTMLInputElement = document.getElementById(
         "blackjack-bet",
     ) as HTMLInputElement;
 

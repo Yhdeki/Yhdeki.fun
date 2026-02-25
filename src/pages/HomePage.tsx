@@ -3,7 +3,9 @@ import "./pages.css";
 import { useCasino } from "../Contexts/CasinoContext";
 
 function HomePage() {
-    const { playerChips } = useCasino();
+    const { playerChips, playerHands, dealerHands } = useCasino();
+    playerHands.splice(0, playerHands.length);
+    dealerHands.splice(0, dealerHands.length);
     return (
         <>
             <div key="1" className="ListGroup">
