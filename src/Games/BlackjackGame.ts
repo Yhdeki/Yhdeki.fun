@@ -9,7 +9,7 @@ const BLACKJACK: number = 21;
 let errorLbl: HTMLOutputElement;
 let resultLbl: HTMLOutputElement;
 
-let myCasino: Casino, myPlayer: BlackjackPlayer, myDealer: BlackjackDealer;
+let myPlayer: BlackjackPlayer, myDealer: BlackjackDealer;
 let mySetters: GameSetters;
 let dealerHiddenCard: Card;
 
@@ -19,7 +19,6 @@ export function startGame(
     dealer: BlackjackDealer,
     setters: GameSetters,
 ) {
-    myCasino = casino;
     myPlayer = player;
     myDealer = dealer;
     mySetters = setters;
@@ -129,57 +128,6 @@ function isInputValid(handIndex: number) {
     return valid === "";
 }
 
-function updateUI() {
-    mySetters.setPlayerHandsCards(
-        myPlayer.hands.map((h) => {
-            const clone: BlackjackHand = new BlackjackHand();
-            clone.cards = h.cards.map((c) => new Card(c.suit, c.rank));
-            clone.sum = h.sum;
-            clone.aces = h.aces;
-            clone.betAmount = h.betAmount;
-            clone.status = h.status;
-            return clone;
-        }),
-    );
-    mySetters.setDealerHandsCards(
-        myDealer.hands.map((h) => {
-            const clone: BlackjackHand = new BlackjackHand();
-            clone.cards = h.cards.map((c) => new Card(c.suit, c.rank));
-            clone.sum = h.sum;
-            clone.aces = h.aces;
-            clone.betAmount = h.betAmount;
-            clone.status = h.status;
-            return clone;
-        }),
-    );
-    mySetters.setPlayerChips(myPlayer.amountOfChips);
-}
-
-function updateOptions(handIndex: number) {
-    updateUI();
-    const hand: BlackjackHand = myPlayer.hands[handIndex];
-    let options: string[] = ["Hit", "Stand"];
-
-    // Check split availability
-    if (hand.cards.length === 2 && myPlayer.amountOfChips >= hand.betAmount) {
-        options.push("DoubleDown");
-        if (
-            hand.cards[0].rank === hand.cards[1].rank ||
-            (hand.cards[0].getValue() > 9 &&
-                hand.cards[0].getValue() < 14 &&
-                hand.cards[1].getValue() > 9 &&
-                hand.cards[1].getValue() < 14) // A jack and a King can split
-        ) {
-            options.push("Split");
-        }
-    }
-    if (hand.sum === BLACKJACK) {
-        options = [];
-    }
-
-    mySetters.setAvailableOptions(options);
-}
-
 function hit(handIndex: number) {
     myDealer.deal(myPlayer, handIndex);
     updateUI();
@@ -260,10 +208,46 @@ function split(handIndex: number): void {
     if (splitCard && splitCard.rank === "A") {
         checkNextHandOrDealer();
     } else {
-        updateOptions(handIndex); // Options for the current hand again
+        updateOptions(handIndex);
     }
 }
 
+function finishGame() {
+    updateUI();
+    const dealerSum: number = myDealer.hands[0].sum;
+    const dealerBust: boolean = dealerSum > BLACKJACK;
+
+    let resultText: string = "";
+
+    myPlayer.hands.forEach((hand, index) => {
+        if (hand.status === "Bust") {
+            resultText += `Hand ${index + 1}: Bust `;
+        } else {
+            if (dealerBust) {
+                resultText += `Hand ${index + 1}: Win! `;
+                myPlayer.amountOfChips += hand.betAmount * 2;
+            } else if (hand.sum > dealerSum) {
+                resultText += `Hand ${index + 1}: Win! `;
+                myPlayer.amountOfChips += hand.betAmount * 2;
+            } else if (hand.sum === dealerSum) {
+                resultText += `Hand ${index + 1}: Push `;
+                myPlayer.amountOfChips += hand.betAmount;
+            } else {
+                resultText += `Hand ${index + 1}: Lose `;
+            }
+        }
+    });
+
+    if (resultLbl) resultLbl.textContent = resultText;
+    updateUI(); // Final chip update
+    mySetters.setGameEnd(true);
+    setTimeout(() => {}, 1000);
+    if (myPlayer.amountOfChips === 0) {
+        mySetters.setLostEverything(true);
+    }
+}
+
+// ------  Dealer  ------
 function checkNextHandOrDealer() {
     updateUI();
     const nextHandIndex: number = myPlayer.hands.findIndex(
@@ -312,38 +296,42 @@ function dealerTurn() {
 
     playDealer();
 }
-
-function finishGame() {
+// ------  Updaters  ------
+function updateOptions(handIndex: number) {
     updateUI();
-    const dealerSum: number = myDealer.hands[0].sum;
-    const dealerBust: boolean = dealerSum > BLACKJACK;
+    const hand: BlackjackHand = myPlayer.hands[handIndex];
+    let options: string[] = ["Hit", "Stand"];
 
-    let resultText: string = "";
-
-    myPlayer.hands.forEach((hand, index) => {
-        if (hand.status === "Bust") {
-            resultText += `Hand ${index + 1}: Bust `;
-        } else {
-            if (dealerBust) {
-                resultText += `Hand ${index + 1}: Win! `;
-                myPlayer.amountOfChips += hand.betAmount * 2;
-            } else if (hand.sum > dealerSum) {
-                resultText += `Hand ${index + 1}: Win! `;
-                myPlayer.amountOfChips += hand.betAmount * 2;
-            } else if (hand.sum === dealerSum) {
-                resultText += `Hand ${index + 1}: Push `;
-                myPlayer.amountOfChips += hand.betAmount;
-            } else {
-                resultText += `Hand ${index + 1}: Lose `;
-            }
+    // Check split availability
+    if (hand.cards.length === 2 && myPlayer.amountOfChips >= hand.betAmount) {
+        options.push("DoubleDown");
+        if (
+            hand.cards[0].rank === hand.cards[1].rank ||
+            (hand.cards[0].getValue() > 9 &&
+                hand.cards[0].getValue() < 14 &&
+                hand.cards[1].getValue() > 9 &&
+                hand.cards[1].getValue() < 14) // A jack and a King can split
+        ) {
+            options.push("Split");
         }
-    });
-
-    if (resultLbl) resultLbl.textContent = resultText;
-    updateUI(); // Final chip update
-    mySetters.setGameEnd(true);
-    setTimeout(() => {}, 1000);
-    if (myPlayer.amountOfChips === 0) {
-        mySetters.setLostEverything(true);
     }
+    if (hand.sum === BLACKJACK) {
+        options = [];
+    }
+
+    mySetters.setAvailableOptions(options);
+}
+
+function updateUI() {
+    mySetters.setPlayerHandsCards(
+        myPlayer.hands.map((h) => {
+            return h.updateHand();
+        }),
+    );
+    mySetters.setDealerHandsCards(
+        myDealer.hands.map((h) => {
+            return h.updateHand();
+        }),
+    );
+    mySetters.setPlayerChips(myPlayer.amountOfChips);
 }

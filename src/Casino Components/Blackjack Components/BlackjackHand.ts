@@ -1,14 +1,19 @@
-import type Card from "../cardClass";
+import Card from "../cardClass";
 import Hand from "../handClass";
+import type BlackjackPlayer from "./BlackjackPLayer";
 
 class BlackjackHand extends Hand {
     aces: number;
     sum: number;
+    lastAction: string;
+
     constructor() {
         super();
         this.aces = 0;
         this.sum = 0;
+        this.lastAction = "none";
     }
+
     addToSum(card: Card): void {
         if (card.rank === "A") {
             // Ace counts as 11, but if that busts, count as 1
@@ -30,6 +35,17 @@ class BlackjackHand extends Hand {
         } else if (this.sum > 21) {
             this.updateStatus("Bust");
         }
+    }
+
+    updateHand() {
+        const clone: BlackjackHand = new BlackjackHand();
+        clone.cards = [];
+        this.cards.forEach((c) => clone.cards.push(new Card(c.suit, c.rank)));
+        clone.sum = this.sum;
+        clone.aces = this.aces;
+        clone.betAmount = this.betAmount;
+        clone.status = this.status;
+        return clone;
     }
 }
 

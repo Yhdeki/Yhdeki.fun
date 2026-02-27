@@ -83,9 +83,8 @@ function BlackJackPage() {
                             id="dealer"
                             title="Dealer's hand"
                             hands={dealerHands}
-                            availableOptions={availableOptions}
-                            gameEnd={gameEnd}
-                            setSelectedOption={() => {}}
+							availableOptions={availableOptions}
+							setSelectedOption={setSelectedOption}
                         />
                         <UserContainer
                             condition1={!gameEnd}
@@ -93,9 +92,8 @@ function BlackJackPage() {
                             id="player"
                             title="Your hand"
                             hands={playerHands}
-                            availableOptions={availableOptions}
-                            gameEnd={gameEnd}
-                            setSelectedOption={setSelectedOption}
+							availableOptions={availableOptions}
+							setSelectedOption={setSelectedOption}
                         />
                         <label
                             id="blackjack-error"
@@ -112,7 +110,7 @@ function BlackJackPage() {
                     <hr />
                 </>
             )}
-            {gameEnd &&<HomeLink />}
+            {gameEnd && <HomeLink />}
         </div>
     );
 }

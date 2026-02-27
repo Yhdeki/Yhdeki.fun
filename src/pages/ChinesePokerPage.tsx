@@ -66,7 +66,7 @@ function ChinesePoker() {
                     <div id="chinese-poker-game-div"></div>
                     <h1>Chinese Poker Game!</h1>
                     <ChipsDisplay chips={playerChips} id="blackjack-info" />
-                    <div className="hand-connector">
+                    
                         <UserContainer
                             condition1={false}
                             condition2={false}
@@ -77,9 +77,9 @@ function ChinesePoker() {
                             gameEnd={gameEnd}
                             setSelectedOption={() => {}}
                         />
-                    </div>
+                    
 
-                    <div className="hand-connector">
+                    
                         <UserContainer
                             condition1={false}
                             condition2={false}
@@ -90,7 +90,7 @@ function ChinesePoker() {
                             gameEnd={gameEnd}
                             setSelectedOption={setSelectedOption}
                         />
-                    </div>
+                    
                     <MySelect
                         condition1={!gameEnd}
                         condition2={true}

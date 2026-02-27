@@ -1,15 +1,11 @@
 import type Hand from "./handClass";
 import type Casino from "./casinoClass";
 
-// A player class that inherits from incasino
 class Player {
     casino: Casino;
     hands: Hand[];
     amountOfChips: number;
 
-    get activeHands(): Hand[] {
-        return this.hands.filter((hand) => hand.status === "Playing");
-    }
     constructor(casino: Casino, chips: number) {
         this.casino = casino;
         this.hands = [];

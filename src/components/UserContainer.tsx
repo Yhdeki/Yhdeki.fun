@@ -1,15 +1,15 @@
-import React, { Fragment } from "react";
+import { Fragment } from "react";
 import type Hand from "../Casino Components/handClass";
 import HandContainer from "./HandContainer";
+import MySelect from "./MySelect";
 
 interface Props {
     id: string;
     title: string;
     hands: Hand[];
-    availableOptions: string[];
-    gameEnd: boolean;
     condition1: boolean;
     condition2: boolean;
+    availableOptions: string[];
     setSelectedOption: (option: string) => void;
 }
 
@@ -24,18 +24,26 @@ function UserContainer(props: Props) {
                     {props.hands.map((hand, index) => (
                         <Fragment key={index}>
                             <HandContainer
-                                myId={props.id}
+                                title={(index + 1).toString()}
                                 hand={hand}
                                 handIndex={index}
-                                gameEnd={props.gameEnd}
                                 condition1={props.condition1}
                                 condition2={props.condition2}
-                                setSelectedOption={props.setSelectedOption}
                                 availableOptions={props.availableOptions}
+                                setSelectedOption={props.setSelectedOption}
                             />
                         </Fragment>
                     ))}
                 </div>
+                <MySelect
+                    condition1={props.condition1}
+                    condition2={props.condition2}
+                    availableOptions={props.availableOptions}
+                    handIndex={
+                        props.hands.findIndex((h) => h.status === "Playing") + 1
+                    }
+                    setSelectedOption={props.setSelectedOption}
+                />
             </div>
         </Fragment>
     );
